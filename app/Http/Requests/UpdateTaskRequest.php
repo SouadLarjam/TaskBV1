@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTaskRequest extends FormRequest
+class UpdateTaskRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        return auth()->check();;
     }
 
     /**
@@ -28,10 +28,9 @@ class StoreTaskRequest extends FormRequest
         ];
     }
 
-    public function messages(): array
+     public function messages(): array
     {
         return [
-            'title.required' => 'Le titre est obligatoire',
             'title.max'      => 'Le titre ne peut pas dépasser 255 caractères',
             'due_date.date'  => 'La date doit être valide',
             'due_date.date_format' => 'La date doit être au format YYYY-MM-DD HH:MM:SS',

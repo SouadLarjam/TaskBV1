@@ -3,28 +3,51 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Task;
 use App\Models\Note;
+use App\Models\Task;
+use App\Http\Requests\StoreNoteRequest;
+use App\Http\Requests\UpdateNoteRequest;
+use App\Services\NoteService;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; 
 
 class NoteController extends Controller
 {
-    
-    public function creeNote(Request $request, Task $task){
-        $request->validate(['content'=>'string']);
-        $note= $task->notes()->create(['content'=> $request->content,'user_id'=>$request->user()->id]);
-        return response()->json(['message'=>'creation reussie',$note]);
+    use AuthorizesRequests;
+
+    public function __construct( protected NoteService $noteService ) {}
+
+    public function creeNote(StoreNoteRequest $request, Task $task)
+    {
+        $request->validated();
+        $note = $this->noteService->create($task, $request->content);
+
+        return response()->json([
+            'message' => 'Création réussie',
+            'note' => $note
+        ]);
     }
 
-    public function modifierNote(Request $request, Note $note){
-        $request->validate(['content'=>'string']);
-        $note->update($request->only('content'));
-        return response()->json(['message'=>'modification reussie',$note]);
+    public function modifierNote(UpdateNoteRequest $request, Note $note)
+    {
+        $this->authorize('update', $note);
+        $request->validated();
+        $this->noteService->update($note, $request->content);
+
+        return response()->json([
+            'message' => 'Modification réussie',
+            'note' => $note
+        ]);
     }
 
-    public function supprimerNote(Request $request, Note $note){
-        $note->delete();
-        return response()->json(['message'=>'supprission reussie!']);
-    }
+    public function supprimerNote(Note $note)
+    {
+        $this->authorize('delete', $note);
 
+        $this->noteService->delete($note);
+
+        return response()->json([
+            'message' => 'Suppression réussie'
+        ]);
+    }
 }
